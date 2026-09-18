@@ -3,6 +3,11 @@
 desktop.ini
 Thumbs.db
 
+
+*.md
+*.pdf
+
+
 # Data files
 *.csv
 *.txt
