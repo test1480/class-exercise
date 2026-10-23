@@ -7,10 +7,9 @@ class MovieInput(BaseModel):
 class MovieResponse(MovieInput):
     id: int
 
-
-# class MovieResponse(BaseModel):
-#     title: str
-#     release_year: int
-#     id: int
-
-
+class CSVInfo(BaseModel):
+    filename: str
+    rows: int
+    columns: int
+    column_names: list[str]
+    dataset_id: int
