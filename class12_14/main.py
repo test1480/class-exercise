@@ -5,6 +5,9 @@ from pathlib import Path
 import io
 import pandas as pd
 
+from middleware import log_requests
+
+
 
 import logging
 
@@ -18,6 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 app = FastAPI(title="Movie API")
+
+# After the existing app = FastAPI(...):
+app.middleware("http")(log_requests)
+
 
 @app.get("/health")
 def health_check():
@@ -128,12 +135,7 @@ async def inspect_csv(file: UploadFile = File(...)):
     logger.info(f"Dataset {file.filename} has been saved (ID {dataset_id})")
 
     # Return a CSVInfo object with the ID, filename, shape, and column names.
-    return CSVInfo(
-            filename=file.filename,
-            rows=df.shape[0],
-            columns=df.shape[1],
-            column_names=list(df.columns),
-            dataset_id=dataset_id
+    return CSVInfo(filename=file.filename,rows=df.shape[0],columns=df.shape[1],column_names=list(df.columns),dataset_id=dataset_id
             )
 
 
@@ -148,3 +150,18 @@ def get_dataset_shape(dataset_id: int):
     logger.info(f"Dataset ID {dataset_id} was found")
     return {"dataset_id":dataset_id,"rows":df.shape[0],"columns":df.shape[1]}
 
+
+from src import ProcessConfig
+import pandas as pd
+
+@app.post("/demo/process-config")
+def demo_process_config(config: ProcessConfig):
+    df = pd.DataFrame({"title": ["Movie A", "Movie A", "Movie B", None]})
+    settings = config.model_dump()
+
+    if settings["processing"]["remove_duplicates"]:
+        df = df.drop_duplicates()
+    if settings["processing"]["drop_missing"]:
+        df = df.dropna()
+        
+    return {"rows": len(df)}
